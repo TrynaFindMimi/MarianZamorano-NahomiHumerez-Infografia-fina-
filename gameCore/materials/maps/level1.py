@@ -1,21 +1,7 @@
 import arcade
 
-# Constantes
-SCREEN_WIDTH = 940
-SCREEN_HEIGHT = 750
-TILE_SIZE = 30
-
-# Clase para el juego
-class PacmanGame(arcade.Window):
-    def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Pacman Nivel 1")
-
-    def setup(self):
-        pass
-
-    def on_draw(self):
-        self.clear(arcade.color.BLACK)
-        #Bordes
+def draw_level1():
+    #Bordes
         arcade.draw_line(30, 670, 910, 670, arcade.color.BLUE, 5)  # Borde superior horizontal
         arcade.draw_line(30, 670, 30, 398, arcade.color.BLUE, 5)  # Borde izquierdo superior
         arcade.draw_line(910, 670, 910, 398, arcade.color.BLUE, 5)  # Borde derecho superior
@@ -69,11 +55,3 @@ class PacmanGame(arcade.Window):
         arcade.draw_line(520, 264, 814, 264, arcade.color.BLUE, 5)  # Linea horizontal 3
         arcade.draw_line(716, 264, 716, 332, arcade.color.BLUE, 5)  # Linea vertical 4
         arcade.draw_line(618, 332, 814, 332, arcade.color.BLUE, 5)  # Linea horizontal 4
-        
-    def on_update(self, delta_time):
-        pass
-
-if __name__ == "__main__":
-    game = PacmanGame()
-    game.setup()
-    arcade.run()
