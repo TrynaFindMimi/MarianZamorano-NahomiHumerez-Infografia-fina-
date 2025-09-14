@@ -8,7 +8,7 @@ TILE_SIZE = 30
 class PacmanGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Pacman")
-        self.mapManager = MapManager(1)
+        self.mapManager = MapManager(2)
 
     def setup(self):
         pass
