@@ -24,22 +24,9 @@ class PointManager:
         cols = len(x_positions)
         rows = len(y_positions)
 
-        # Count points and power pellets before placement
         total_points = 0
-        for row, cy in enumerate(y_positions):
-            for col, cx in enumerate(x_positions):
-                # Skip central/ghost area
-                if 422 <= cx <= 520 and 332 <= cy <= 398:
-                    continue
-                # Skip if in wall
-                if self._in_wall(cx, cy):
-                    continue
-                total_points += 1
+        total_power_pellets = 0
 
-        # Print total number of points (regular + power pellets)
-        print(f"Total points to be placed in the map: {total_points}")
-
-        # Place points and power pellets
         for row, cy in enumerate(y_positions):
             for col, cx in enumerate(x_positions):
                 # Skip central/ghost area
@@ -53,12 +40,40 @@ class PointManager:
                     pellet = arcade.SpriteCircle(7, arcade.color.WHITE)
                     pellet.center_x = cx
                     pellet.center_y = cy
-                    self.power_pellet_list.append(pellet)
+                    if not arcade.check_for_collision_with_list(pellet, self._generate_wall_sprites()):
+                        self.power_pellet_list.append(pellet)
+                        total_power_pellets += 1
                 else:
                     point = arcade.SpriteCircle(3, arcade.color.YELLOW)
                     point.center_x = cx
                     point.center_y = cy
                     self.sprite_list.append(point)
+                    total_points += 1
+
+        print(f"Total regular points: {total_points}")
+        print(f"Total power pellets: {total_power_pellets}")
+
+    def _generate_wall_sprites(self):
+        """Genera sprites temporales para verificar colisiones con muros"""
+        wall_sprites = arcade.SpriteList()
+        for x1, y1, x2, y2 in self.segments:
+            if y1 == y2:
+                length = int(abs(x2 - x1))
+                width, height = length, 5
+                cx = (x1 + x2) / 2
+                cy = y1
+            elif x1 == x2:
+                length = int(abs(y2 - y1))
+                width, height = 5, length
+                cx = x1
+                cy = (y1 + y2) / 2
+            else:
+                continue
+            wall = arcade.SpriteSolidColor(width, height, arcade.color.BLUE)
+            wall.center_x = cx
+            wall.center_y = cy
+            wall_sprites.append(wall)
+        return wall_sprites
 
     def _point_to_segment_distance(self, px, py, x1, y1, x2, y2):
         vx, vy = x2 - x1, y2 - y1

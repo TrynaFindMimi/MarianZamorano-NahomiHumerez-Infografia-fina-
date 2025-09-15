@@ -91,3 +91,6 @@ def build_level1_walls() -> arcade.SpriteList:
 
 def get_wall_segments_level1():
     return WALLS_LEVEL1
+
+def get_ghost_spawn_level1():
+    return 471, 365
