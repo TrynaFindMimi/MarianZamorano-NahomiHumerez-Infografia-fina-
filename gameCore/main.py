@@ -1,6 +1,7 @@
 import arcade
 from logicGame.mapManager import MapManager
 from logicGame.pointManager import PointManager
+from materials.maps.level1 import get_level_matrix
 from characters.pacman import Pacman
 
 SCREEN_WIDTH = 940
@@ -10,9 +11,19 @@ TILE_SIZE = 30
 class PacmanGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Pacman")
-        self.mapManager = MapManager(2)
-        self.pointManager = PointManager(SCREEN_WIDTH, SCREEN_HEIGHT, TILE_SIZE)
+        arcade.set_background_color(arcade.color.BLACK)
 
+        # Mapa y paredes
+        self.mapManager = MapManager(1)  # Nivel 1
+        self.wall_list = self.mapManager.get_current_walls()
+
+        # Matriz lógica del nivel
+        level_matrix = get_level_matrix(SCREEN_WIDTH, SCREEN_HEIGHT, TILE_SIZE)
+
+        # Puntos perfectamente centrados
+        self.pointManager = PointManager(TILE_SIZE, level_matrix)
+
+        # Pac-Man
         self.pacman_list = arcade.SpriteList()
         self.pacman = Pacman(scale=0.35)
         self.pacman.center_x = 200
@@ -25,7 +36,7 @@ class PacmanGame(arcade.Window):
         pass
 
     def on_draw(self):
-        self.clear(arcade.color.BLACK)
+        self.clear()
         self.mapManager.draw_current_map()
         self.pointManager.draw_points()
         self.pacman_list.draw()
@@ -55,7 +66,9 @@ class PacmanGame(arcade.Window):
         pass
 
 
+
 if __name__ == "__main__":
     game = PacmanGame()
     game.setup()
     arcade.run()
+
