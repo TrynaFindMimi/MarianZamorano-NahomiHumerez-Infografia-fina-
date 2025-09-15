@@ -14,13 +14,12 @@ class PacmanGame(arcade.Window):
         self.pointManager = PointManager(SCREEN_WIDTH, SCREEN_HEIGHT, TILE_SIZE)
 
         self.pacman_list = arcade.SpriteList()
-        self.pacman = Pacman(scale=0.3)
+        self.pacman = Pacman(scale=0.35)
         self.pacman.center_x = 200
         self.pacman.center_y = 100
         self.pacman_list.append(self.pacman)
-        self.speed = 4
 
-        self.pressed_keys = set()
+        self.speed = 8
 
     def setup(self):
         pass
@@ -32,17 +31,7 @@ class PacmanGame(arcade.Window):
         self.pacman_list.draw()
 
     def on_update(self, delta_time):
-        dx = dy = 0
-        if arcade.key.UP in self.pressed_keys:
-            dy = self.speed
-        if arcade.key.DOWN in self.pressed_keys:
-            dy = -self.speed
-        if arcade.key.LEFT in self.pressed_keys:
-            dx = -self.speed
-        if arcade.key.RIGHT in self.pressed_keys:
-            dx = self.speed
-
-        self.pacman.move(dx, dy, self.mapManager.get_walls())
+        self.pacman.move(self.mapManager.get_walls(), TILE_SIZE)
         self.pacman.update_animation(delta_time)
 
         puntos_comidos = self.pointManager.check_collision(self.pacman)
@@ -50,10 +39,21 @@ class PacmanGame(arcade.Window):
             print(f"Comiste {puntos_comidos} punto(s)")
 
     def on_key_press(self, key, modifiers):
-        self.pressed_keys.add(key)
+        if key == arcade.key.SPACE:
+            self.pacman.started = True
+
+        elif key == arcade.key.UP:
+            self.pacman.set_next_direction(0, self.speed)
+        elif key == arcade.key.DOWN:
+            self.pacman.set_next_direction(0, -self.speed)
+        elif key == arcade.key.LEFT:
+            self.pacman.set_next_direction(-self.speed, 0)
+        elif key == arcade.key.RIGHT:
+            self.pacman.set_next_direction(self.speed, 0)
 
     def on_key_release(self, key, modifiers):
-        self.pressed_keys.discard(key)
+        pass
+
 
 if __name__ == "__main__":
     game = PacmanGame()

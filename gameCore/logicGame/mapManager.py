@@ -1,4 +1,3 @@
-# gameCore/logicGame/mapManager.py
 import arcade
 from materials.maps.level1 import build_level1_walls
 from materials.maps.level2 import build_level2_walls
@@ -20,7 +19,6 @@ class MapManager:
         self.walls = self.builders[level]()
 
     def draw_current_map(self):
-        # Dibuja muros como sprites
         self.walls.draw()
 
     def get_walls(self) -> arcade.SpriteList:
