@@ -10,16 +10,22 @@ TILE_SIZE = 30
 class PacmanGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Pacman")
-        self.mapManager = MapManager(2)
+
+        # Cargar mapa y puntos
+        self.mapManager = MapManager(2)  # Nivel 2
         self.pointManager = PointManager(SCREEN_WIDTH, SCREEN_HEIGHT, TILE_SIZE)
 
+        # Obtener hitboxes reales de las paredes
+        self.walls_hitbox = self.mapManager.get_walls()  # Debe devolver SpriteList de hitboxes
+
+        # Crear Pacman
         self.pacman_list = arcade.SpriteList()
-        self.pacman = Pacman(scale=0.35)
+        self.pacman = Pacman(scale=0.25)  # Más pequeño
         self.pacman.center_x = 200
         self.pacman.center_y = 100
         self.pacman_list.append(self.pacman)
 
-        self.speed = 8
+        self.speed = 4
 
     def setup(self):
         pass
@@ -31,7 +37,8 @@ class PacmanGame(arcade.Window):
         self.pacman_list.draw()
 
     def on_update(self, delta_time):
-        self.pacman.move(self.mapManager.get_walls(), TILE_SIZE)
+        # Mover Pacman usando el hitbox real
+        self.pacman.move(self.walls_hitbox, TILE_SIZE)
         self.pacman.update_animation(delta_time)
 
         puntos_comidos = self.pointManager.check_collision(self.pacman)
@@ -41,7 +48,6 @@ class PacmanGame(arcade.Window):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             self.pacman.started = True
-
         elif key == arcade.key.UP:
             self.pacman.set_next_direction(0, self.speed)
         elif key == arcade.key.DOWN:
