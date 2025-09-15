@@ -1,27 +1,25 @@
 import arcade
-from materials.maps.level1 import draw_level1, get_wall_hitboxes as get_walls_level1
-from materials.maps.level2 import draw_level2, get_wall_hitboxes as get_walls_level2
+from materials.maps.level1 import build_level1_walls
+from materials.maps.level2 import build_level2_walls
 
 class MapManager:
     def __init__(self, current_level=1):
         self.current_level = current_level
-        self.level_drawers = {
-            1: draw_level1,
-            2: draw_level2
+        self.builders = {
+            1: build_level1_walls,
+            2: build_level2_walls,
         }
-        self.level_walls = {
-            1: get_walls_level1,
-            2: get_walls_level2
-        }
+        self.walls = arcade.SpriteList(use_spatial_hash=True)
+        self.load_level(self.current_level)
+
+    def load_level(self, level: int):
+        if level not in self.builders:
+            raise ValueError(f"Level {level} not defined")
+        self.current_level = level
+        self.walls = self.builders[level]()
 
     def draw_current_map(self):
         self.walls.draw()
 
-    def get_current_walls(self):
-        if self.current_level in self.level_walls:
-            wall_list = arcade.SpriteList()
-            for wall in self.level_walls[self.current_level]():
-                wall_list.append(wall)
-            return wall_list
-        else:
-            raise ValueError(f"Level {self.current_level} not defined")
+    def get_walls(self) -> arcade.SpriteList:
+        return self.walls
