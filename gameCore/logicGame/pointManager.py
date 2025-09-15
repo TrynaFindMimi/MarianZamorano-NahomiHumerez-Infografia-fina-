@@ -1,32 +1,54 @@
 import arcade
 import math
-from materials.maps.level1 import WALLS_LEVEL1, COLLISION_RADIUS
 
 class PointManager:
-    def __init__(self, tile_size, level_matrix, map_width, map_height, ghost_cell_bounds=None):
+    def __init__(self, width, height, tile_size, map_manager):
+        if map_manager.current_level == 1:
+            from materials.maps.level1 import get_wall_segments_level1, COLLISION_RADIUS
+            self.segments = get_wall_segments_level1()
+            self.collision_radius = COLLISION_RADIUS
+        elif map_manager.current_level == 2:
+            from materials.maps.level2 import get_wall_segments_level2, COLLISION_RADIUS
+            self.segments = get_wall_segments_level2()
+            self.collision_radius = COLLISION_RADIUS
+        else:
+            raise ValueError(f"Level {map_manager.current_level} not supported for points")
+
         self.sprite_list = arcade.SpriteList()
         self.power_pellet_list = arcade.SpriteList()
 
-        x_positions = [79, 149, 210, 289, 359, 429, 499, 569, 639, 699, 779, 849]
-        y_positions = [89, 159, 229, 299, 369, 439, 509, 579, 649]
-
-
-        if ghost_cell_bounds:
-            (gc_col_min, gc_row_min), (gc_col_max, gc_row_max) = ghost_cell_bounds
-        else:
-            gc_col_min = gc_row_min = gc_col_max = gc_row_max = -1
+        # Define positions with steps of 49x and 34y, constrained within playable area
+        x_positions = list(range(30, 910 - 49, 49))  # Start at 30, end before 910, step 49
+        y_positions = list(range(60, 670 - 34, 34))  # Start at 60, end before 670, step 34
 
         cols = len(x_positions)
         rows = len(y_positions)
 
+        # Count points and power pellets before placement
+        total_points = 0
         for row, cy in enumerate(y_positions):
             for col, cx in enumerate(x_positions):
-                if gc_col_min <= col <= gc_col_max and gc_row_min <= row <= gc_row_max:
+                # Skip central/ghost area
+                if 422 <= cx <= 520 and 332 <= cy <= 398:
                     continue
-                if 422 <= cx <= 520 and 323 <= cy <= 398:
-                    continue
+                # Skip if in wall
                 if self._in_wall(cx, cy):
                     continue
+                total_points += 1
+
+        # Print total number of points (regular + power pellets)
+        print(f"Total points to be placed in the map: {total_points}")
+
+        # Place points and power pellets
+        for row, cy in enumerate(y_positions):
+            for col, cx in enumerate(x_positions):
+                # Skip central/ghost area
+                if 422 <= cx <= 520 and 332 <= cy <= 398:
+                    continue
+                # Skip if in wall
+                if self._in_wall(cx, cy):
+                    continue
+                # Power pellets at corners
                 if (col, row) in [(0, 0), (cols - 1, 0), (0, rows - 1), (cols - 1, rows - 1)]:
                     pellet = arcade.SpriteCircle(7, arcade.color.WHITE)
                     pellet.center_x = cx
@@ -50,8 +72,8 @@ class PointManager:
         return math.hypot(px - projx, py - projy)
 
     def _in_wall(self, px, py):
-        for x1, y1, x2, y2 in WALLS_LEVEL1:
-            if self._point_to_segment_distance(px, py, x1, y1, x2, y2) <= COLLISION_RADIUS:
+        for x1, y1, x2, y2 in self.segments:
+            if self._point_to_segment_distance(px, py, x1, y1, x2, y2) <= self.collision_radius:
                 return True
         return False
 
@@ -60,10 +82,11 @@ class PointManager:
         self.power_pellet_list.draw()
 
     def check_collision(self, pacman_sprite):
-        eaten = arcade.check_for_collision_with_list(pacman_sprite, self.sprite_list)
-        for p in eaten:
+        """Elimina puntos que colisionen con Pac-Man y devuelve cuántos comió"""
+        hit_list = arcade.check_for_collision_with_list(pacman_sprite, self.sprite_list)
+        for point in hit_list:
+            point.remove_from_sprite_lists()
+        hit_power = arcade.check_for_collision_with_list(pacman_sprite, self.power_pellet_list)
+        for p in hit_power:
             p.remove_from_sprite_lists()
-        eaten_power = arcade.check_for_collision_with_list(pacman_sprite, self.power_pellet_list)
-        for p in eaten_power:
-            p.remove_from_sprite_lists()
-        return len(eaten) + len(eaten_power)
+        return len(hit_list) + len(hit_power)
