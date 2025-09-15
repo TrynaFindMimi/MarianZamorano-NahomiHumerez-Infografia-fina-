@@ -36,7 +36,7 @@ def build_level1_walls() -> arcade.SpriteList:
         (910, 60, 910, 332),  # Borde derecho inferior
 
         # Cuadrado central
-        (422, 398, 520, 398),  # Borde superior horizontal (rojo visual)
+        (422, 398, 520, 398),  # Borde superior horizontal
         (422, 332, 520, 332),  # Borde inferior horizontal
         (422, 398, 422, 332),  # Borde izquierdo
         (520, 398, 520, 332),  # Borde derecho
