@@ -1,3 +1,4 @@
+# gameCore/characters/pacman.py
 import arcade
 import os
 
@@ -30,7 +31,6 @@ class Pacman(arcade.Sprite):
             arcade.load_texture(os.path.join(base_path, "pacman_derecha_c.png")),
         ]
 
-        # Dirección inicial
         self.direction = "right"
         self.current_texture_index = 0
         self.animation_speed = 0.15
@@ -51,10 +51,9 @@ class Pacman(arcade.Sprite):
             elif self.direction == "right":
                 self.texture = self.textures_right[self.current_texture_index]
 
-    def move(self, dx, dy):
-        self.center_x += dx
-        self.center_y += dy
-
+    def move(self, dx, dy, walls: arcade.SpriteList):
+        """Mueve a Pacman con colisiones contra muros, eje por eje."""
+        # Dirección según intento de movimiento
         if dx > 0:
             self.direction = "right"
         elif dx < 0:
@@ -63,3 +62,18 @@ class Pacman(arcade.Sprite):
             self.direction = "up"
         elif dy < 0:
             self.direction = "down"
+
+        if dx == 0 and dy == 0:
+            return
+
+        if dx != 0:
+            old_x = self.center_x
+            self.center_x += dx
+            if arcade.check_for_collision_with_list(self, walls):
+                self.center_x = old_x
+
+        if dy != 0:
+            old_y = self.center_y
+            self.center_y += dy
+            if arcade.check_for_collision_with_list(self, walls):
+                self.center_y = old_y
