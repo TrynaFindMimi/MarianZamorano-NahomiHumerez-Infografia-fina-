@@ -3,15 +3,17 @@ from materials.maps.level1 import draw_level1, get_wall_hitboxes as get_walls_le
 from materials.maps.level2 import draw_level2, get_wall_hitboxes as get_walls_level2
 
 class MapManager:
-    def __init__(self, current_level=1):
+    def __init__(self, current_level=2):
         self.current_level = current_level
         self.level_drawers = {
             1: draw_level1,
-            2: draw_level2
+            2: draw_level2,
+
         }
         self.level_walls = {
             1: get_walls_level1,
-            2: get_walls_level2
+            2: get_walls_level2,
+
         }
 
     def draw_current_map(self):
