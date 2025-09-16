@@ -1,5 +1,6 @@
 import arcade
 import math
+import random
 
 class PointManager:
     def __init__(self, width, height, tile_size, map_manager):
@@ -17,44 +18,38 @@ class PointManager:
         self.sprite_list = arcade.SpriteList()
         self.power_pellet_list = arcade.SpriteList()
 
-        # Define positions with steps of 49x and 34y, constrained within playable area
-        x_positions = list(range(30, 910 - 49, 49))  # Start at 30, end before 910, step 49
-        y_positions = list(range(60, 670 - 34, 34))  # Start at 60, end before 670, step 34
+        x_positions = list(range(30, 910 - 49, 49))
+        y_positions = list(range(60, 670 - 34, 34))
 
-        cols = len(x_positions)
-        rows = len(y_positions)
-
-        total_points = 0
-        total_power_pellets = 0
-
-        for row, cy in enumerate(y_positions):
-            for col, cx in enumerate(x_positions):
-                # Skip central/ghost area
+        point_positions = []
+        for cy in y_positions:
+            for cx in x_positions:
                 if 422 <= cx <= 520 and 332 <= cy <= 398:
                     continue
-                # Skip if in wall
                 if self._in_wall(cx, cy):
                     continue
-                # Power pellets at corners
-                if (col, row) in [(0, 0), (cols - 1, 0), (0, rows - 1), (cols - 1, rows - 1)]:
-                    pellet = arcade.SpriteCircle(7, arcade.color.WHITE)
-                    pellet.center_x = cx
-                    pellet.center_y = cy
-                    if not arcade.check_for_collision_with_list(pellet, self._generate_wall_sprites()):
-                        self.power_pellet_list.append(pellet)
-                        total_power_pellets += 1
-                else:
-                    point = arcade.SpriteCircle(3, arcade.color.YELLOW)
-                    point.center_x = cx
-                    point.center_y = cy
-                    self.sprite_list.append(point)
-                    total_points += 1
+                point_positions.append((cx, cy))
+
+        power_positions = random.sample(point_positions, 4)
+
+        total_points = 0
+        for cx, cy in point_positions:
+            if (cx, cy) in power_positions:
+                pellet = arcade.SpriteCircle(10, arcade.color.WHITE)
+                pellet.center_x = cx
+                pellet.center_y = cy
+                self.power_pellet_list.append(pellet)
+            else:
+                point = arcade.SpriteCircle(3, arcade.color.YELLOW)
+                point.center_x = cx
+                point.center_y = cy
+                self.sprite_list.append(point)
+                total_points += 1
 
         print(f"Total regular points: {total_points}")
-        print(f"Total power pellets: {total_power_pellets}")
+        print(f"Total power pellets: {len(self.power_pellet_list)}")
 
     def _generate_wall_sprites(self):
-        """Genera sprites temporales para verificar colisiones con muros"""
         wall_sprites = arcade.SpriteList()
         for x1, y1, x2, y2 in self.segments:
             if y1 == y2:
@@ -97,11 +92,10 @@ class PointManager:
         self.power_pellet_list.draw()
 
     def check_collision(self, pacman_sprite):
-        """Elimina puntos que colisionen con Pac-Man y devuelve cuántos comió"""
-        hit_list = arcade.check_for_collision_with_list(pacman_sprite, self.sprite_list)
-        for point in hit_list:
+        hit_points = arcade.check_for_collision_with_list(pacman_sprite, self.sprite_list)
+        for point in hit_points:
             point.remove_from_sprite_lists()
         hit_power = arcade.check_for_collision_with_list(pacman_sprite, self.power_pellet_list)
-        for p in hit_power:
-            p.remove_from_sprite_lists()
-        return len(hit_list) + len(hit_power)
+        for pellet in hit_power:
+            pellet.remove_from_sprite_lists()
+        return len(hit_points), len(hit_power)
