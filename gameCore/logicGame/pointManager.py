@@ -1,3 +1,4 @@
+import time
 import arcade
 import math
 import random
@@ -95,7 +96,16 @@ class PointManager:
         hit_points = arcade.check_for_collision_with_list(pacman_sprite, self.sprite_list)
         for point in hit_points:
             point.remove_from_sprite_lists()
+            
         hit_power = arcade.check_for_collision_with_list(pacman_sprite, self.power_pellet_list)
         for pellet in hit_power:
             pellet.remove_from_sprite_lists()
+        
+        puntos = len(hit_points)
+        power_pellets = len(hit_power)
+
+        if hasattr(pacman_sprite, "double_points_until") and time.time() < pacman_sprite.double_points_until:
+            puntos *= 2
+            print("🍐 ¡Puntos duplicados por efecto de la pera!")
+        
         return len(hit_points), len(hit_power)

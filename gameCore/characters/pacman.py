@@ -55,6 +55,7 @@ class Pacman(arcade.Sprite):
         self.invulnerable_until = 0.0
         self.respawn_x = None
         self.respawn_y = None
+        self.double_points_until = 0.0
 
     def _aligned_axis(self, value: float) -> bool:
         remainder = (value - self.tile_size / 2) % self.tile_size
@@ -183,3 +184,11 @@ class Pacman(arcade.Sprite):
             self.center_y = 0
         elif self.center_y <= 0:
             self.center_y = SCREEN_HEIGHT
+
+def teleport_to(self, x, y):
+    self.center_x = x
+    self.center_y = y
+    self.dx = 0
+    self.dy = 0
+    self.next_dx = 0
+    self.next_dy = 0

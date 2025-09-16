@@ -93,6 +93,15 @@ class Ghost(arcade.Sprite):
 
     def move(self, walls):
         now = time.time()
+        if hasattr(self, "_frozen_until") and now < self._frozen_until:
+            return
+        elif hasattr(self, "_frozen_until") and now >= self._frozen_until:
+            self.dx = getattr(self, "_frozen_dx", 0)
+            self.dy = getattr(self, "_frozen_dy", 0)
+            del self._frozen_until
+            del self._frozen_dx
+            del self._frozen_dy
+        
         if self.state == "respawning":
             self.respawn_timer -= (now - self.last_dir_change)
             self.last_dir_change = now
@@ -144,3 +153,16 @@ class Ghost(arcade.Sprite):
             elif self.dx < 0: self.texture = self.textures_left[0]
             elif self.dy > 0: self.texture = self.textures_up[0]
             elif self.dy < 0: self.texture = self.textures_down[0]
+            
+    def freeze(self, duration=3.0):
+        self._frozen_until = time.time() + duration
+        self._frozen_dx = self.dx
+        self._frozen_dy = self.dy
+        self.dx = 0
+        self.dy = 0
+        
+    def show_prediction(self, duration=3.0):
+        if self.dx != 0 or self.dy != 0:
+            future_x = self.center_x + self.dx * 30 * duration
+            future_y = self.center_y + self.dy * 30 * duration
+            print(f"Ghost {self.ghost_color} irá hacia ({int(future_x)}, {int(future_y)}) en {duration} segundos")

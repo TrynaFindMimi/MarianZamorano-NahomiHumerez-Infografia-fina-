@@ -4,6 +4,7 @@ from logicGame.mapManager import MapManager
 from logicGame.pointManager import PointManager
 from characters.pacman import Pacman
 from characters.ghost import Ghost
+from logicGame.fruitManager import FruitManager
 
 SCREEN_WIDTH = 940
 SCREEN_HEIGHT = 750
@@ -38,6 +39,8 @@ class PacmanGame(arcade.Window):
             ghost.target_pacman = self.pacman
             self.ghosts.append(ghost)
             delay += 5
+            
+        self.fruitManager = FruitManager(self.mapManager)
 
     def restart_level(self):
         self.setup()
@@ -48,6 +51,7 @@ class PacmanGame(arcade.Window):
         self.pointManager.draw_points()
         self.pacman_list.draw()
         self.ghosts.draw()
+        self.fruitManager.draw_fruits()
 
     def on_update(self, delta_time):
         walls = self.mapManager.get_walls()
@@ -80,6 +84,8 @@ class PacmanGame(arcade.Window):
                     ghost.set_state("dead") 
                 elif ghost.state == "dead":
                     pass
+        
+        self.fruitManager.check_collision(self.pacman, self.ghosts)
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
