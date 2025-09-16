@@ -60,6 +60,10 @@ class PacmanGame(arcade.Window):
     def on_update(self, delta_time):
         walls = self.mapManager.get_walls()
 
+        if self.pacman.is_dying:
+            self.pacman.update_animation(delta_time)
+            return
+        
         self.pacman.move(walls, TILE_SIZE)
         self.pacman.update_animation(delta_time)
 
@@ -83,7 +87,6 @@ class PacmanGame(arcade.Window):
 
             if arcade.check_for_collision(ghost, self.pacman):
                 if ghost.state == "normal":
-                    GameState.lives -= 1
                     GameState.add_score(-100)
                     self.pacman.die(*self.pacman_spawn)
                 elif ghost.state == "weak":
