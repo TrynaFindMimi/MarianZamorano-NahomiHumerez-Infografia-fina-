@@ -3,6 +3,7 @@ from typing import Optional
 
 SCREEN_WIDTH = 940
 
+
 class Ghost(arcade.Sprite):
     def __init__(self, color: str, scale=0.25, tile_size=30):
         base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "materials", "ghosts"))
@@ -28,9 +29,10 @@ class Ghost(arcade.Sprite):
         self.last_dir_change = time.time()
         self.target_pacman: Optional[arcade.Sprite] = None
         self.spawn_x = self.spawn_y = 0
-        self.spawn_radius = 55  # zona más amplia
-        self.respawn_delay = 2.0
+        self.spawn_radius = 55 
+        self.respawn_delay = 0.7  
         self.respawn_timer = 0.0
+        self.dead_timer = 0.0
 
     def _aligned_axis(self, v):
         return (v - self.tile_size/2) % self.tile_size < self.epsilon or (v - self.tile_size/2) % self.tile_size > self.tile_size - self.epsilon
@@ -58,10 +60,12 @@ class Ghost(arcade.Sprite):
         self.state, self.current_texture_index, self.time_since_last_frame = s, 0, 0
         if s == "dead":
             self.speed, self.dx, self.dy, self.weak_timer = 4, 0, 0, 0
+            self.dead_timer = 20.0 
         elif s == "weak":
             self.speed, self.weak_timer, self.blinking = 1, duration, False
         elif s == "normal":
             self.speed, self.weak_timer, self.blinking = 2, 0, False
+            self.dead_timer = 0.0
 
     def spawn(self, x, y, release_delay):
         self.center_x, self.center_y, self.spawn_x, self.spawn_y = x, y, x, y
@@ -91,7 +95,7 @@ class Ghost(arcade.Sprite):
         elif self.center_x >= SCREEN_WIDTH and 332 <= self.center_y <= 398:
             self.center_x = 0
 
-    def move(self, walls):
+    def move(self, walls, ghosts=None):
         now = time.time()
         if hasattr(self, "_frozen_until") and now < self._frozen_until:
             return
@@ -107,8 +111,27 @@ class Ghost(arcade.Sprite):
             self.last_dir_change = now
             if self.respawn_timer <= 0:
                 self.set_state("normal")
+                self.choose_direction(self.target_pacman, walls)
             return
-        if self.state == "dead" or (now - self.last_dir_change) >= 3:
+        if self.state == "dead":
+            elapsed = now - self.last_dir_change
+            self.dead_timer -= elapsed
+            self.last_dir_change = now
+            if self.target_pacman:
+                opts = [(0,self.speed),(0,-self.speed),(self.speed,0),(-self.speed,0)]
+                valid = [d for d in opts if self._try_direction(walls,*d)]
+                if valid:
+                    valid.sort(key=lambda d: -self._distance_to(self.target_pacman.center_x, self.target_pacman.center_y, d))
+                    self.dx, self.dy = valid[0]
+            self.center_x += self.dx
+            self.center_y += self.dy
+            self._teleport_if_needed()
+            if self.dead_timer <= 0:
+                self.state = "respawning"
+                self.respawn_timer = self.respawn_delay
+                self.dx, self.dy = 0, 0
+            return
+        if (now - self.last_dir_change) >= 3:
             self.choose_direction(self.target_pacman if self.state != "dead" else None, walls)
             self.last_dir_change = now
         if self.dx and self._aligned_axis(self.center_y):
@@ -119,14 +142,14 @@ class Ghost(arcade.Sprite):
         self.center_x += self.dx
         self.center_y += self.dy
         self._teleport_if_needed()
-        if not self._near_spawn() and arcade.check_for_collision_with_list(self, walls):
+        if not self._near_spawn() and (self.state != "dead" and arcade.check_for_collision_with_list(self, walls)):
             self.center_x, self.center_y = ox, oy
             self.choose_direction(self.target_pacman if self.state != "dead" else None, walls)
-        if self.state == "dead" and self._near_spawn():
-            self.state = "respawning"
-            self.respawn_timer = self.respawn_delay
-            self.last_dir_change = now
-            self.dx, self.dy = 0, 0
+        if ghosts:
+            for other in ghosts:
+                if other is not self and arcade.check_for_collision(self, other):
+                    self.center_x, self.center_y = ox, oy
+                    self.choose_direction(self.target_pacman, walls)
 
     def update_animation(self, dt=1/60):
         self.time_since_last_frame += dt
