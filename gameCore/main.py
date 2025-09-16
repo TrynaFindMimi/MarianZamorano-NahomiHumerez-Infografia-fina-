@@ -21,7 +21,7 @@ class PacmanGame(arcade.Window):
         self.setup()
 
     def setup(self):
-        self.mapManager = MapManager(1)
+        self.mapManager = MapManager(GameState.level)
         self.pointManager = PointManager(SCREEN_WIDTH, SCREEN_HEIGHT, TILE_SIZE, self.mapManager)
 
         self.pacman_list = arcade.SpriteList()
