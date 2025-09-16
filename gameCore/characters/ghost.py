@@ -3,6 +3,7 @@ from typing import Optional
 
 SCREEN_WIDTH = 940
 
+
 class Ghost(arcade.Sprite):
     def __init__(self, color: str, scale=0.25, tile_size=30):
         base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "materials", "ghosts"))
