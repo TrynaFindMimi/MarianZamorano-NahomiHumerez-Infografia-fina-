@@ -27,7 +27,7 @@ class FruitManager:
 
         for fruit_type, (x, y) in zip(fruit_types, selected_positions):
             image_path = os.path.join(base_path, f"{fruit_type}.png")
-            fruit = arcade.Sprite(image_path, scale=0.15)
+            fruit = arcade.Sprite(image_path, scale=0.3)
             fruit.center_x = x
             fruit.center_y = y
             fruit.fruit_type = fruit_type
