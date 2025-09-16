@@ -1,5 +1,7 @@
 import arcade
 import time
+from util.gameState import GameState
+from ui.hud import draw_hud, check_next_level_click
 from logicGame.mapManager import MapManager
 from logicGame.pointManager import PointManager
 from characters.pacman import Pacman
@@ -41,6 +43,7 @@ class PacmanGame(arcade.Window):
             delay += 5
             
         self.fruitManager = FruitManager(self.mapManager)
+        GameState.reset_for_level(self.mapManager.current_level)
 
     def restart_level(self):
         self.setup()
@@ -52,6 +55,7 @@ class PacmanGame(arcade.Window):
         self.pacman_list.draw()
         self.ghosts.draw()
         self.fruitManager.draw_fruits()
+        draw_hud(GameState.score, GameState.lives, GameState.level, GameState.score_to_advance)
 
     def on_update(self, delta_time):
         walls = self.mapManager.get_walls()
@@ -59,17 +63,17 @@ class PacmanGame(arcade.Window):
         self.pacman.move(walls, TILE_SIZE)
         self.pacman.update_animation(delta_time)
 
-        if self.pacman.lives <= 0:
+        if GameState.lives <= 0:
             self.restart_level()
             return
 
         puntos, power_pellets = self.pointManager.check_collision(self.pacman)
 
         if puntos > 0:
-            print(f"Comiste {puntos} punto(s)")
+            GameState.add_score(puntos * 10)
 
         if power_pellets > 0:
-            print(f"Comiste {power_pellets} power pellet(s)")
+            GameState.add_score(power_pellets * 50)
             for ghost in self.ghosts:
                 ghost.set_state("weak", duration=7.0)
 
@@ -79,14 +83,19 @@ class PacmanGame(arcade.Window):
 
             if arcade.check_for_collision(ghost, self.pacman):
                 if ghost.state == "normal":
+                    GameState.lives -= 1
+                    GameState.add_score(-100)
                     self.pacman.die(*self.pacman_spawn)
                 elif ghost.state == "weak":
-                    ghost.set_state("dead") 
+                    ghost.set_state("dead")
+                    GameState.add_score(200)
                 elif ghost.state == "dead":
                     pass
-        
+
         self.fruitManager.check_collision(self.pacman, self.ghosts)
 
+        GameState.check_level_completion()
+ 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             self.pacman.started = True
@@ -98,6 +107,11 @@ class PacmanGame(arcade.Window):
             self.pacman.set_next_direction(-self.speed, 0)
         elif key == arcade.key.RIGHT:
             self.pacman.set_next_direction(self.speed, 0)
+            
+    def on_mouse_press(self, x, y, button, modifiers):
+        if check_next_level_click(x, y) and GameState.ready_for_next_level:
+            GameState.next_level()
+            self.setup()
 
     def on_key_release(self, key, modifiers):
         pass

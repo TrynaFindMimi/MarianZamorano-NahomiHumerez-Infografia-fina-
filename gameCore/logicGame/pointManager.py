@@ -2,6 +2,7 @@ import time
 import arcade
 import math
 import random
+from util.gameState import GameState
 
 class PointManager:
     def __init__(self, width, height, tile_size, map_manager):
@@ -107,5 +108,8 @@ class PointManager:
         if hasattr(pacman_sprite, "double_points_until") and time.time() < pacman_sprite.double_points_until:
             puntos *= 2
             print("🍐 ¡Puntos duplicados por efecto de la pera!")
-        
+
+        GameState.add_score(puntos * 10)
+        GameState.add_score(power_pellets * 50)
+
         return len(hit_points), len(hit_power)

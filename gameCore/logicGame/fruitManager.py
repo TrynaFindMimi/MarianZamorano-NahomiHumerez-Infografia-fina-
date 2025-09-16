@@ -2,6 +2,7 @@ import time
 import arcade
 import random
 import os
+from util.gameState import GameState
 
 class FruitManager:
     def __init__(self, map_manager):
@@ -68,9 +69,19 @@ class FruitManager:
 
     def check_collision(self, pacman, ghost_list):
         hit_fruits = arcade.check_for_collision_with_list(pacman, self.fruit_list)
+        fruit_scores = {
+            "cereza": 150,
+            "frutilla": 100,
+            "pera": 120
+        }
+
         for fruit in hit_fruits:
             fruit_type = fruit.fruit_type
             fruit.remove_from_sprite_lists()
+
+            score = fruit_scores.get(fruit_type, 100)
+            GameState.add_score(score)
+
             if fruit_type in self.fruit_effects:
                 self.fruit_effects[fruit_type](pacman, ghost_list)
 
