@@ -48,8 +48,8 @@ class PointManager:
                 self.sprite_list.append(point)
                 total_points += 1
 
-        print(f"Total regular points: {total_points}")
-        print(f"Total power pellets: {len(self.power_pellet_list)}")
+        print(f"Total pacdots: {total_points}")
+        print(f"Total super pacdots: {len(self.power_pellet_list)}")
 
     def _generate_wall_sprites(self):
         wall_sprites = arcade.SpriteList()
